@@ -7,7 +7,7 @@ from app.database import engine, Base
 from app.routers import (
     auth, users, doctors, doctor_me,
     history, appointments, prescriptions,
-    reports, notifications,
+    reports, notifications, admin,
 )
 
 # Create all tables
@@ -37,6 +37,7 @@ app.include_router(appointments.router)
 app.include_router(prescriptions.router)
 app.include_router(reports.router)
 app.include_router(notifications.router)
+app.include_router(admin.router)
 
 # Serve uploaded files
 uploads_dir = os.path.join(os.path.dirname(__file__), "..", "uploads")

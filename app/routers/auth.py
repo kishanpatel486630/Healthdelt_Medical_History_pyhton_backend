@@ -66,19 +66,21 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=409, detail="User with this email or mobile already exists")
 
     hashed = get_password_hash(req.password)
+    # Patients are directly ACTIVE, only doctors need verification
+    is_doctor = req.role == "DOCTOR"
     user = User(
         fullName=req.fullName,
         email=req.email.lower(),
         mobile=req.mobile or None,
         passwordHash=hashed,
-        role="DOCTOR" if req.role == "DOCTOR" else "PATIENT",
-        status="PENDING_VERIFICATION",
+        role="DOCTOR" if is_doctor else "PATIENT",
+        status="PENDING_VERIFICATION" if is_doctor else "ACTIVE",
     )
     db.add(user)
     db.flush()
 
     # Create doctor profile if registering as doctor
-    if req.role == "DOCTOR":
+    if is_doctor:
         doctor = Doctor(
             userId=user.id,
             specialization="General Practice",
