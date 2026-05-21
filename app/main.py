@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.database import engine, Base
+from app.config import settings
 from app.routers import (
     auth, users, doctors, doctor_me,
     history, appointments, prescriptions,
@@ -16,12 +17,27 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Healthdelt API (Python/FastAPI)")
 
 # CORS — allow frontend origins
+origins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://healthdelt-tracker.vercel.app",
+    "https://healthdelt-tracker-lidpw925x-kishan-parvadiyas-projects.vercel.app",
+]
+
+if settings.CLIENT_URL:
+    if "," in settings.CLIENT_URL:
+        origins.extend([o.strip() for o in settings.CLIENT_URL.split(",") if o.strip()])
+    else:
+        origins.append(settings.CLIENT_URL.strip())
+
+unique_origins = []
+for origin in origins:
+    if origin not in unique_origins:
+        unique_origins.append(origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5174",
-    ],
+    allow_origins=unique_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
