@@ -123,8 +123,12 @@ Swagger docs at: `http://localhost:5000/docs`
 |---------|-------|
 | **Runtime** | Python 3 |
 | **Build Command** | `pip install -r requirements.txt` |
-| **Start Command** | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+| **Start Command** | `gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT` |
 | **Instance Type** | Free (or paid for always-on) |
+
+> **Why `gunicorn` instead of `uvicorn` directly?**  
+> Gunicorn acts as a process manager and spawns multiple `uvicorn` worker processes (`-w 4`), making your app far more stable and performant in production. The `-k uvicorn.workers.UvicornWorker` flag tells Gunicorn to use ASGI-compatible workers (required for FastAPI).  
+> For Render's **free tier** (limited RAM), you can reduce to `-w 2` to avoid memory issues.
 
 ### Step 3 — Set Environment Variables
 In your Render Web Service → **Environment** tab, add the following variables:
