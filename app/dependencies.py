@@ -6,6 +6,48 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.models import User
+from app.config import settings
+from app.services.upload_service import UploadService
+from app.services.patient_service import PatientService
+from app.services.doctor_service import DoctorService
+from app.services.pdf_service import PdfService
+from app.services.ai_service import AiService
+from app.services.user_service import UserService
+from app.services.qr_service import QrService
+
+
+def get_upload_service():
+    return UploadService(settings.UPLOAD_DIR)
+
+
+def get_patient_service():
+    return PatientService()
+
+
+def get_auth_service():
+    from app.services.auth_service import AuthService
+
+    return AuthService()
+
+
+def get_doctor_service():
+    return DoctorService()
+
+
+def get_pdf_service():
+    return PdfService()
+
+
+def get_ai_service():
+    return AiService()
+
+
+def get_user_service():
+    return UserService()
+
+
+def get_qr_service():
+    return QrService()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 

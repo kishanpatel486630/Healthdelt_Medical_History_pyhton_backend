@@ -1,0 +1,1 @@
+"""Patient tests package stub."""

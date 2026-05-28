@@ -5,10 +5,10 @@ from fastapi.staticfiles import StaticFiles
 
 from app.database import engine, Base
 from app.config import settings
-from app.routers import (
+from app.api.routes import (
     auth, users, doctors, doctor_me,
     history, appointments, prescriptions,
-    reports, notifications, admin,
+    reports, notifications, admin, patients, medical_records, qr, uploads,
 )
 
 # Create all tables
@@ -48,12 +48,16 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(doctors.router)
 app.include_router(doctor_me.router)
+app.include_router(patients.router)
+app.include_router(medical_records.router)
 app.include_router(history.router)
 app.include_router(appointments.router)
 app.include_router(prescriptions.router)
 app.include_router(reports.router)
 app.include_router(notifications.router)
 app.include_router(admin.router)
+app.include_router(qr.router)
+app.include_router(uploads.router)
 
 # Serve uploaded files
 uploads_dir = os.path.join(os.path.dirname(__file__), "..", "uploads")

@@ -1,7 +1,7 @@
 import secrets
 import random
 import string
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Optional
 
 import bcrypt
@@ -29,13 +29,13 @@ def get_password_hash(password: str) -> str:
 
 def create_access_token(user_id: str, email: str, role: str) -> str:
     """Match Node.js: jwt.sign({ id, email, role }, ACCESS_SECRET, { expiresIn: '15m' })"""
-    expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {
         "id": user_id,
         "email": email,
         "role": role,
         "exp": expire,
-        "iat": datetime.utcnow(),
+        "iat": datetime.now(UTC),
     }
     return jwt.encode(payload, settings.JWT_ACCESS_SECRET, algorithm=settings.ALGORITHM)
 
@@ -52,4 +52,4 @@ def generate_otp(length: int = 4) -> str:
 
 def get_otp_expiry(minutes: int = 5) -> datetime:
     """Return a datetime `minutes` from now."""
-    return datetime.utcnow() + timedelta(minutes=minutes)
+    return datetime.now(UTC) + timedelta(minutes=minutes)
