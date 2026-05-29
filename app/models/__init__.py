@@ -48,6 +48,7 @@ class User(Base):
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
     emergency_contacts = relationship("EmergencyContact", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="user")
+    assistant_query_logs = relationship("AssistantQueryLog", back_populates="user", cascade="all, delete-orphan")
 
 
 class Doctor(Base):
@@ -277,6 +278,40 @@ class AuditLog(Base):
     user = relationship("User", back_populates="audit_logs")
 
 
+class AssistantQueryLog(Base):
+    __tablename__ = "AssistantQueryLog"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    userId = Column(String, ForeignKey("User.id", ondelete="CASCADE"), nullable=False)
+    role = Column(String, nullable=False)
+    query = Column(Text, nullable=False)
+    queryContext = Column(Text, nullable=True)
+    answer = Column(Text, nullable=False)
+    answerSource = Column(String, nullable=True)
+    confidence = Column(Float, nullable=True)
+    actions = Column(Text, nullable=True)
+    helpful = Column(Boolean, nullable=True)
+    feedback = Column(Text, nullable=True)
+    createdAt = Column(DateTime(timezone=True), default=utc_now)
+    updatedAt = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    user = relationship("User", back_populates="assistant_query_logs")
+
+
+class FaqEntry(Base):
+    __tablename__ = "FaqEntry"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    question = Column(Text, nullable=False)
+    answer = Column(Text, nullable=False)
+    role = Column(String, nullable=False, default="PATIENT")
+    tags = Column(Text, nullable=True)
+    priority = Column(Integer, default=0)
+    isActive = Column(Boolean, default=True)
+    createdAt = Column(DateTime(timezone=True), default=utc_now)
+    updatedAt = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+
 class MasterMedicine(Base):
     __tablename__ = "MasterMedicine"
     id = Column(String, primary_key=True, default=generate_uuid)
@@ -339,6 +374,8 @@ __all__ = [
     "RefreshToken",
     "EmergencyContact",
     "AuditLog",
+    "AssistantQueryLog",
+    "FaqEntry",
     "MasterMedicine",
     "MasterLabTest",
     "MasterDisease",

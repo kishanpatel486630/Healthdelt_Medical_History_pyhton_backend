@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Assistant Admin Review</title>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial;
+        margin: 24px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 8px;
+        margin: 6px 0;
+      }
+      .card {
+        border: 1px solid #ddd;
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+      }
+      .small {
+        width: 120px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Assistant Admin Review</h2>
+    <p>
+      Paste an admin bearer token below, then click
+      <strong>Load Unresolved</strong>.
+    </p>
+    <input id="token" placeholder="Bearer ey..." />
+    <div class="row">
+      <button id="load">Load Unresolved</button>
+      <button id="refresh">Refresh</button>
+    </div>
+    <div id="list"></div>
+
+    <script>
+      const listEl = document.getElementById("list");
+      const tokenInput = document.getElementById("token");
+      async function api(path, method = "GET", body = null) {
+        const headers = { "Content-Type": "application/json" };
+        const t = tokenInput.value.trim();
+        if (t) headers["Authorization"] = t;
+        const res = await fetch(path, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        return res.json();
+      }
+      document.getElementById("load").addEventListener("click", load);
+      document.getElementById("refresh").addEventListener("click", load);
+      async function load() {
+        listEl.innerHTML = "Loading...";
+        const r = await api("/api/assistant/admin/queries");
+        if (!r.success) {
+          listEl.innerText = JSON.stringify(r);
+          return;
+        }
+        listEl.innerHTML = "";
+        r.queries.forEach((q) => {
+          const c = document.createElement("div");
+          c.className = "card";
+          c.innerHTML = `<b>Query:</b> ${q.query}<br/><b>Answer:</b> ${q.answer}<br/><b>Confidence:</b> ${q.confidence}<br/><b>User:</b> ${q.userId}<br/>`;
+          const promoteBtn = document.createElement("button");
+          promoteBtn.textContent = "Promote to FAQ";
+          promoteBtn.addEventListener("click", () => openPromote(q));
+          c.appendChild(promoteBtn);
+          listEl.appendChild(c);
+        });
+      }
+      function openPromote(q) {
+        const modal = document.createElement("div");
+        modal.className = "card";
+        modal.innerHTML = `<h4>Promote Query</h4>`;
+        const question = document.createElement("textarea");
+        question.rows = 2;
+        question.value = q.query;
+        const answer = document.createElement("textarea");
+        answer.rows = 4;
+        answer.value = q.answer;
+        const role = document.createElement("select");
+        ["PATIENT", "DOCTOR", "ADMIN"].forEach((v) => {
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = v;
+          if (v == q.role) o.selected = true;
+          role.appendChild(o);
+        });
+        const tags = document.createElement("input");
+        tags.placeholder = "comma separated tags";
+        const send = document.createElement("button");
+        send.textContent = "Promote";
+        send.addEventListener("click", async () => {
+          const body = {
+            queryLogId: q.id,
+            question: question.value,
+            answer: answer.value,
+            role: role.value,
+            tags: tags.value ? tags.value.split(",").map((s) => s.trim()) : [],
+          };
+          const res = await api("/api/assistant/admin/promote", "POST", body);
+          alert(JSON.stringify(res));
+          modal.remove();
+          load();
+        });
+        const cancel = document.createElement("button");
+        cancel.textContent = "Cancel";
+        cancel.addEventListener("click", () => modal.remove());
+        modal.appendChild(question);
+        modal.appendChild(answer);
+        modal.appendChild(role);
+        modal.appendChild(tags);
+        modal.appendChild(send);
+        modal.appendChild(cancel);
+        listEl.prepend(modal);
+      }
+    </script>
+  </body>
+</html>

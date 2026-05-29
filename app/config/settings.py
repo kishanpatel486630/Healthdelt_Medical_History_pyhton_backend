@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     CLIENT_URL: str = "http://localhost:5173"
     UPLOAD_DIR: str = "./uploads"
     MAX_FILE_SIZE: int = 10485760
+    OPENAI_API_KEY: str = ""
+    AI_ASSISTANT_MODEL: str = "gpt-4o-mini"
 
     model_config = ConfigDict(env_file=".env")
 

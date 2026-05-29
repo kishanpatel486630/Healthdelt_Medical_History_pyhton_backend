@@ -8,7 +8,7 @@ from app.config import settings
 from app.api.routes import (
     auth, users, doctors, doctor_me,
     history, appointments, prescriptions,
-    reports, notifications, admin, patients, medical_records, qr, uploads,
+    reports, notifications, admin, patients, medical_records, qr, uploads, assistant,
 )
 
 # Create all tables
@@ -58,11 +58,17 @@ app.include_router(notifications.router)
 app.include_router(admin.router)
 app.include_router(qr.router)
 app.include_router(uploads.router)
+app.include_router(assistant.router)
 
 # Serve uploaded files
 uploads_dir = os.path.join(os.path.dirname(__file__), "..", "uploads")
 os.makedirs(uploads_dir, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
+
+# Serve simple static assets (admin UI)
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+os.makedirs(static_dir, exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
 @app.get("/api/health")
